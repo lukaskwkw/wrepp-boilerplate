@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { clamp } from "../utils/math";
 
-const ImageScale = 2.8;
+const ImageScale = 1.3;
 
 const Wrapper = styled.div`
   background-color: #fff;
@@ -42,6 +42,32 @@ const ImageText = styled.div`
   transition: 0.3s ease-out;
 `;
 
+const roundZoomNearCorners = ({
+  offsetX,
+  offsetY,
+  offsetWidth,
+  offsetHeight,
+  clampedX,
+  clampedY,
+  maxX,
+  maxY,
+  fraction = 8
+}) => {
+  const x =
+    offsetX <= offsetWidth / fraction
+      ? maxX / 2
+      : offsetX >= ((fraction - 1) * offsetWidth) / fraction
+      ? -maxX / 2
+      : clampedX;
+  const y =
+    offsetY <= offsetHeight / fraction
+      ? maxY / 2
+      : offsetY >= ((fraction - 1) * offsetHeight) / fraction
+      ? -maxY / 2
+      : clampedY;
+  return { x, y };
+};
+
 const DefaultPosition = { x: 0, y: 0 };
 
 const onMouseMove = (myRef, setPosition) => e => {
@@ -51,17 +77,21 @@ const onMouseMove = (myRef, setPosition) => e => {
     // e.stopPropagation();
     // e.preventDefault();
     // const { offsetWidth, offsetHeight } = current;
+
+    //this way image must be first children of wrapper!
     const { offsetWidth, offsetHeight } = current.firstChild;
     const { pageX, pageY, offsetX, offsetY } = e;
-    const signX = offsetX > offsetWidth / 2 ? -1 : 1;
-    const signY = offsetY > offsetWidth / 2 ? -1 : 1;
+    // const signX = offsetX > offsetWidth / 2 ? -1 : 1;
+    // const signY = offsetY > offsetHeight / 2 ? -1 : 1;
     console.info({ eP: e.path, e });
+    //todo: change maxX and maxY variable names to diffrent
     const maxX = ImageScale * offsetWidth - offsetWidth;
     const maxY = ImageScale * offsetHeight - offsetHeight;
     const diffX = pageX - (pageX + ImageScale * offsetX - maxX / 2);
     const diffY = pageY - (pageY + ImageScale * offsetY - maxY / 2);
     const clampedX = clamp(diffX, -maxX / 2, maxX / 2);
     const clampedY = clamp(diffY, -maxY / 2, maxY / 2);
+
     console.info({
       xScaled: ImageScale * current.offsetWidth,
       current,
@@ -75,10 +105,18 @@ const onMouseMove = (myRef, setPosition) => e => {
       clampedX,
       clampedY
     });
-    setPosition({
-      x: clampedX,
-      y: clampedY
-    });
+    setPosition(
+      roundZoomNearCorners({
+        offsetX,
+        offsetY,
+        offsetWidth,
+        offsetHeight,
+        clampedX,
+        clampedY,
+        maxX,
+        maxY
+      })
+    );
   });
 };
 
