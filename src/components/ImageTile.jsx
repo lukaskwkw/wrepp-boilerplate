@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { clamp } from "../utils/math";
+
+const ImageScale = 2.8;
 
 const Wrapper = styled.div`
   background-color: #fff;
@@ -11,21 +14,22 @@ const Wrapper = styled.div`
   overflow: hidden;
   position: relative;
 
-  /* &:hover > :first-child {
-    transform: scale(1.3);
+  &:hover > :first-child {
+    transform: scale(${ImageScale});
 
     & + * {
       left: 0;
     }
-  } */
+  }
 `;
 
 const Image = styled.img`
   width: 100%;
   height: auto;
   position: absolute;
+  pointer-events: none;
 
-  /* transition: transform 0.5s ease-out; */
+  transition: all 0.5s ease-out;
 `;
 
 const ImageText = styled.div`
@@ -46,7 +50,8 @@ const onMouseMove = (myRef, setPosition) => e => {
     const { current } = myRef;
     // e.stopPropagation();
     // e.preventDefault();
-    const { offsetWidth, offsetHeight } = current;
+    // const { offsetWidth, offsetHeight } = current;
+    const { offsetWidth, offsetHeight } = current.firstChild;
     const { pageX, pageY, offsetX, offsetY } = e;
     const signX = offsetX > offsetWidth / 2 ? -1 : 1;
     const signY = offsetY > offsetWidth / 2 ? -1 : 1;
@@ -55,8 +60,8 @@ const onMouseMove = (myRef, setPosition) => e => {
     const maxY = ImageScale * offsetHeight - offsetHeight;
     const diffX = pageX - (pageX + ImageScale * offsetX - maxX / 2);
     const diffY = pageY - (pageY + ImageScale * offsetY - maxY / 2);
-    const clampedX = clamp(diffX, -10000000, maxX / 2);
-    const clampedY = clamp(diffY, -10000000, maxY / 2);
+    const clampedX = clamp(diffX, -maxX / 2, maxX / 2);
+    const clampedY = clamp(diffY, -maxY / 2, maxY / 2);
     console.info({
       xScaled: ImageScale * current.offsetWidth,
       current,
@@ -77,23 +82,28 @@ const onMouseMove = (myRef, setPosition) => e => {
   });
 };
 
+const onMouseLeave = setPosition => e => setPosition(DefaultPosition);
+
 const HOC = ({ src, title }) => {
   const myRef = useRef();
   const [position, setPosition] = useState(DefaultPosition);
   const mouseMove = onMouseMove(myRef, setPosition);
-  // const Element = React.createElement(ImageTile);
-  // let reference = myRef.current;
+  const mouseLeave = onMouseLeave(setPosition);
+
   useEffect(() => {
-    // myRef.current = reference;
-    // console.info({ position, test: myRef.current });
+    // console.info({ curr: myRef.current });
     myRef.current.addEventListener("mousemove", mouseMove);
-    return () => myRef.current.removeEventListener("mousemove", mouseMove);
+    myRef.current.addEventListener("mouseleave", mouseLeave);
+    return () => {
+      console.info("dupa");
+      myRef.current.removeEventListener("mousemove", mouseMove);
+      myRef.current.removeEventListener("mouseleave", mouseLeave);
+    };
   });
-  // const ref = React.createRef();
+
   return (
     <ImageTile
       ref={myRef}
-      mouseMove={mouseMove}
       setPosition={setPosition}
       position={position}
       src={src}
@@ -103,19 +113,9 @@ const HOC = ({ src, title }) => {
 };
 
 const ImageTile = React.forwardRef(
-  (
-    {
-      mouseMove,
-      mouseenter,
-      position = DefaultPosition,
-      setPosition,
-      src,
-      title
-    },
-    ref
-  ) => pug`
+  ({ position = DefaultPosition, src, title }, ref) => pug`
   Wrapper(ref=ref)
-    Image(onMouseMove=mouseMove style={left: position.x +'px', top: position.y + 'px'} src=src)
+    Image(style={left: position.x +'px', top: position.y + 'px'} src=src)
     ImageText #{title}
 `
 );

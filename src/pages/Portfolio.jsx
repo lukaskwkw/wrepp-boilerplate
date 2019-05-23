@@ -20,7 +20,7 @@ const Section = () => pug`
   Container
     Images
       each image, index in [...ImageUrls, ...ImageUrls]
-        ImageTile(key=image src=image title=image)  
+        ImageTile(key=index src=image title=image)  
 `;
 
 const Portfolio = () => (
