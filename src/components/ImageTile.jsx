@@ -40,41 +40,40 @@ const ImageText = styled.div`
 
 const DefaultPosition = { x: 0, y: 0 };
 
-// const onMouseDown = (setRelative) => (e) => {
-//   // only left mouse button
-//   if (e.button !== 0) return
-//   var pos = $(this.getDOMNode()).offset()
-//   this.setState({
-//     dragging: true,
-//     rel: {
-//       x: e.pageX - pos.left,
-//       y: e.pageY - pos.top
-//     }
-//   })
-//   e.stopPropagation()
-//   e.preventDefault()
-// }
-
 const onMouseMove = (myRef, setPosition) => e => {
   requestAnimationFrame(() => {
-    //sometimes event is nullable
-    if (!e.pageX) return;
-
+    // if (e.path.length > 8) return;
     const { current } = myRef;
-    console.info({ myRef, e });
-    console.info({
-      rec: e,
-      ofx: current.offsetLeft,
-      ofy: current.offsetTop
-    });
-    setPosition(({ x, y }) => {
-      console.info({ x, y });
-      const diffX = e.pageX - current.offsetLeft;
-      const diffY = e.pageY - current.offsetTop;
-      return { x: diffX, y: diffY };
-    });
     // e.stopPropagation();
     // e.preventDefault();
+    const { offsetWidth, offsetHeight } = current;
+    const { pageX, pageY, offsetX, offsetY } = e;
+    const signX = offsetX > offsetWidth / 2 ? -1 : 1;
+    const signY = offsetY > offsetWidth / 2 ? -1 : 1;
+    console.info({ eP: e.path, e });
+    const maxX = ImageScale * offsetWidth - offsetWidth;
+    const maxY = ImageScale * offsetHeight - offsetHeight;
+    const diffX = pageX - (pageX + ImageScale * offsetX - maxX / 2);
+    const diffY = pageY - (pageY + ImageScale * offsetY - maxY / 2);
+    const clampedX = clamp(diffX, -10000000, maxX / 2);
+    const clampedY = clamp(diffY, -10000000, maxY / 2);
+    console.info({
+      xScaled: ImageScale * current.offsetWidth,
+      current,
+      offsetX,
+      offsetY,
+      maxX,
+      pageX,
+      pageY,
+      diffX,
+      diffY,
+      clampedX,
+      clampedY
+    });
+    setPosition({
+      x: clampedX,
+      y: clampedY
+    });
   });
 };
 
