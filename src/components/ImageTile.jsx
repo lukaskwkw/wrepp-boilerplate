@@ -8,6 +8,10 @@ const Wrapper = styled.div`
   background-color: #fff;
   padding: 4px;
   margin: 16px;
+`;
+
+const ImageContainer = styled.div`
+  background-color: #fff;
   width: 200px;
   height: 200px;
   cursor: pointer;
@@ -33,6 +37,7 @@ const Image = styled.img`
 `;
 
 const ImageText = styled.div`
+  padding: 2px;
   left: -100%;
   background-color: black;
   color: white;
@@ -51,7 +56,7 @@ const roundZoomNearCorners = ({
   clampedY,
   maxX,
   maxY,
-  fraction = 8
+  fraction = 6
 }) => {
   const x =
     offsetX <= offsetWidth / fraction
@@ -72,18 +77,11 @@ const DefaultPosition = { x: 0, y: 0 };
 
 const onMouseMove = (myRef, setPosition) => e => {
   requestAnimationFrame(() => {
-    // if (e.path.length > 8) return;
     const { current } = myRef;
-    // e.stopPropagation();
-    // e.preventDefault();
-    // const { offsetWidth, offsetHeight } = current;
 
-    //this way image must be first children of wrapper!
+    //this way a Image must be first children of ImageContainer!
     const { offsetWidth, offsetHeight } = current.firstChild;
     const { pageX, pageY, offsetX, offsetY } = e;
-    // const signX = offsetX > offsetWidth / 2 ? -1 : 1;
-    // const signY = offsetY > offsetHeight / 2 ? -1 : 1;
-    console.info({ eP: e.path, e });
     //todo: change maxX and maxY variable names to diffrent
     const maxX = ImageScale * offsetWidth - offsetWidth;
     const maxY = ImageScale * offsetHeight - offsetHeight;
@@ -92,19 +90,6 @@ const onMouseMove = (myRef, setPosition) => e => {
     const clampedX = clamp(diffX, -maxX / 2, maxX / 2);
     const clampedY = clamp(diffY, -maxY / 2, maxY / 2);
 
-    console.info({
-      xScaled: ImageScale * current.offsetWidth,
-      current,
-      offsetX,
-      offsetY,
-      maxX,
-      pageX,
-      pageY,
-      diffX,
-      diffY,
-      clampedX,
-      clampedY
-    });
     setPosition(
       roundZoomNearCorners({
         offsetX,
@@ -120,7 +105,7 @@ const onMouseMove = (myRef, setPosition) => e => {
   });
 };
 
-const onMouseLeave = setPosition => e => setPosition(DefaultPosition);
+const onMouseLeave = setPosition => () => setPosition(DefaultPosition);
 
 const HOC = ({ src, title }) => {
   const myRef = useRef();
@@ -145,16 +130,17 @@ const HOC = ({ src, title }) => {
       setPosition={setPosition}
       position={position}
       src={src}
-      title={src}
+      title={title}
     />
   );
 };
 
 const ImageTile = React.forwardRef(
   ({ position = DefaultPosition, src, title }, ref) => pug`
-  Wrapper(ref=ref)
-    Image(style={left: position.x +'px', top: position.y + 'px'} src=src)
-    ImageText #{title}
+  Wrapper
+    ImageContainer(ref=ref)
+      Image(style={left: position.x +'px', top: position.y + 'px'} src=src)
+      ImageText #{title}
 `
 );
 
