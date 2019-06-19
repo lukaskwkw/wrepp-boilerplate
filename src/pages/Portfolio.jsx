@@ -10,7 +10,7 @@ const Images = styled.div`
 `;
 
 const ImageContainer = styled.div`
-  max-width: 240px;
+  max-width: 248px;
   width: 100%;
   height: 100px;
   flex: 1 0 21%;
