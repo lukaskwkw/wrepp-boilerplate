@@ -4,8 +4,8 @@ import { PropTypes } from "prop-types";
 
 import "./index.scss";
 import PAGES from "./routes";
-import Header from "./components/Header";
 import history from "./utils/history";
+import { Helmet } from "react-helmet";
 
 const App = ({ pathname }) => {
   const [page, setPage] = useState(pathname);
@@ -15,8 +15,9 @@ const App = ({ pathname }) => {
   const Handler = PAGES[page] || PAGES["/404"];
   return (
     <>
-      <Header />
-      <p>Loreme ipsum dolores</p>
+      <Helmet>
+        <title>Move library search</title>
+      </Helmet>
       <Handler />
     </>
   );

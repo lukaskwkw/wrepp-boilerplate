@@ -5,6 +5,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const merge = require("webpack-merge");
 
 const babelLoaderConfig = require("./webpack.babel-loader");
+const typescriptLoaderConfig = require("./webpack.typescript-loader");
 
 const PRODUCTION_ENV = process.env.NODE_ENV === "production";
 
@@ -15,6 +16,7 @@ const config = {
       {
         test: /\.s?css$/,
         use: [
+          //todo: check this is it obsolete
           !PRODUCTION_ENV ? "style-loader" : MiniCssExtractPlugin.loader,
           "css-loader",
           "sass-loader"
@@ -57,4 +59,4 @@ const config = {
     })
   );
 
-module.exports = merge(babelLoaderConfig, config);
+module.exports = merge(babelLoaderConfig, typescriptLoaderConfig, config);
